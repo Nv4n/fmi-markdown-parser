@@ -1,0 +1,13 @@
+//
+// Created by Sybatron on 5/16/2026.
+//
+
+#ifndef FMI_MARKDOWN_PARSER_MARKDOWNREADER_H
+#define FMI_MARKDOWN_PARSER_MARKDOWNREADER_H
+
+
+class MarkdownReader {
+};
+
+
+#endif //FMI_MARKDOWN_PARSER_MARKDOWNREADER_H
