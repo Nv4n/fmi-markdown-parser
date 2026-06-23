@@ -4,10 +4,13 @@
 
 #include "Lexer.h"
 
+#include "Utility.h"
+
+
 char Lexer::getChar() {
     char symb = memInput.get();
-    int nextCol = mCol + 1;
-    int nextLine = mLine;
+    unsigned nextCol = mCol + 1;
+    unsigned nextLine = mLine;
     if (symb == '\n') {
         nextLine++;
         nextCol = 0;
@@ -30,8 +33,8 @@ std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
 
     while (memInput.good()) {
+        if (peekChar() == EOF) break;
         char ch = peekChar();
-        if (ch == EOF) break;
 
         // Handle Newlines
         if (ch == '\n') {
@@ -116,9 +119,9 @@ std::vector<Token> Lexer::tokenize() {
         }
 
         // Handle Numbers
-        if (isdigit(ch)) {
+        if (Utility::isDigit(ch)) {
             std::string numStr;
-            while (isdigit(peekChar())) {
+            while (Utility::isDigit(peekChar())) {
                 numStr += getChar();
             }
             tokens.push_back({TokenType::NUMBER, numStr, mLine, mCol});
@@ -138,7 +141,7 @@ std::vector<Token> Lexer::tokenize() {
                peekChar() != '\n' && peekChar() != '#' &&
                peekChar() != '*' && peekChar() != '-' &&
                peekChar() != '~' && peekChar() != '`' &&
-               peekChar() != ' ' && !isdigit(peekChar()) && peekChar() != '.') {
+               peekChar() != ' ' && !Utility::isDigit(peekChar()) && peekChar() != '.') {
             textStr += getChar();
         }
         if (!textStr.empty()) {
@@ -147,4 +150,166 @@ std::vector<Token> Lexer::tokenize() {
     }
     tokens.push_back({TokenType::END_OF_FILE, "", mLine, mCol});
     return tokens;
+}
+
+
+std::vector<Token> Lexer::tokenize2() {
+    std::vector<Token> tokens;
+
+    while (memInput.good()) {
+        char ch = peekChar();
+        if (ch == EOF) break;
+
+        switch (ch) {
+            case '\n': handleNewline(tokens);
+                break;
+            case ' ': handleSpace(tokens);
+                break;
+            case '#': handleHash(tokens);
+                break;
+            case '*': handleStar(tokens);
+                break;
+            case '-': handleDash(tokens);
+                break;
+            case '~': handleTilde(tokens);
+                break;
+            case '`': handleBacktick(tokens);
+                break;
+            case '.': handleDot(tokens);
+                break;
+
+            default:
+                if (Utility::isDigit(ch)) {
+                    handleNumber(tokens);
+                } else {
+                    handleText(tokens);
+                }
+                break;
+        }
+    }
+
+    tokens.push_back({TokenType::END_OF_FILE, "", mLine, mCol});
+    return tokens;
+}
+
+void Lexer::handleBackslash(std::vector<Token> &tokens) {
+    getChar(); // Consume the '\\' itself
+
+    char next = peekChar();
+
+    if (Utility::isEscapable(next)) {
+        char escapedChar = getChar();
+        std::string literalStr(1, escapedChar);
+
+        tokens.push_back({TokenType::TEXT, literalStr, mLine, mCol});
+    } else {
+        tokens.push_back({TokenType::TEXT, "\\", mLine, mCol});
+    }
+}
+
+void Lexer::handleNewline(std::vector<Token> &tokens) {
+    getChar();
+    tokens.push_back({TokenType::NEWLINE, "\n", mLine, mCol});
+}
+
+void Lexer::handleSpace(std::vector<Token> &tokens) {
+    getChar();
+    tokens.push_back({TokenType::SPACE, " ", mLine, mCol});
+}
+
+void Lexer::handleHash(std::vector<Token> &tokens) {
+    getChar();
+    tokens.push_back({TokenType::HASH, "#", mLine, mCol});
+}
+
+//TODO FIX TRIPLE STAR PROBLEM
+void Lexer::handleStar(std::vector<Token> &tokens) {
+    getChar();
+    if (peekChar() == '*') {
+        if (starCount >= 3) {
+            tokens.push_back({TokenType::STAR, "*", mLine, mCol});
+            starCount--;
+            return;
+        }
+        if (peekChar() == '*') {
+            isTripleStar = true;
+        }
+
+        getChar();
+        starCount++;
+        tokens.push_back({TokenType::DOUBLE_STAR, "**", mLine, mCol});
+    } else {
+        tokens.push_back({TokenType::STAR, "*", mLine, mCol});
+        starCount--;
+    }
+}
+
+void Lexer::handleDash(std::vector<Token> &tokens) {
+    getChar();
+    if (peekChar() == '-') {
+        getChar();
+        if (peekChar() == '-') {
+            getChar();
+            tokens.push_back({TokenType::TRIPLE_DASH, "---", mLine, mCol});
+            return;
+        }
+        tokens.push_back({TokenType::DASH, "-", mLine, mCol});
+        tokens.push_back({TokenType::DASH, "-", mLine, mCol});
+        return;
+    }
+    tokens.push_back({TokenType::DASH, "-", mLine, mCol});
+}
+
+void Lexer::handleTilde(std::vector<Token> &tokens) {
+    getChar();
+    if (peekChar() == '~') {
+        getChar();
+        tokens.push_back({TokenType::DOUBLE_TILDE, "~~", mLine, mCol});
+    } else {
+        tokens.push_back({TokenType::TILDE, "~", mLine, mCol});
+    }
+}
+
+void Lexer::handleBacktick(std::vector<Token> &tokens) {
+    getChar();
+    if (peekChar() == '`') {
+        getChar();
+        if (peekChar() == '`') {
+            getChar();
+            tokens.push_back({TokenType::TRIPLE_BACKTICK, "```", mLine, mCol});
+            return;
+        }
+        tokens.push_back({TokenType::BACKTICK, "`", mLine, mCol});
+        tokens.push_back({TokenType::BACKTICK, "`", mLine, mCol});
+        return;
+    }
+    tokens.push_back({TokenType::BACKTICK, "`", mLine, mCol});
+}
+
+void Lexer::handleDot(std::vector<Token> &tokens) {
+    getChar();
+    tokens.push_back({TokenType::DOT, ".", mLine, mCol});
+}
+
+void Lexer::handleNumber(std::vector<Token> &tokens) {
+    std::string numStr;
+    while (Utility::isDigit(peekChar())) {
+        numStr += getChar();
+    }
+    tokens.push_back({TokenType::NUMBER, numStr, mLine, mCol});
+}
+
+void Lexer::handleText(std::vector<Token> &tokens) {
+    std::string textStr;
+
+    while (memInput.good() && peekChar() != EOF &&
+           peekChar() != '\n' && peekChar() != '#' &&
+           peekChar() != '*' && peekChar() != '-' &&
+           peekChar() != '~' && peekChar() != '`' &&
+           peekChar() != ' ' && !Utility::isDigit(peekChar()) && peekChar() != '.') {
+        textStr += getChar();
+    }
+    if (!textStr.empty()) {
+        tokens.push_back({TokenType::TEXT, textStr, mLine, mCol});
+    }
 }

@@ -14,7 +14,6 @@
 class MarkdownParser {
 private:
     std::vector<Token> memTokens;
-    GlobalLogger &memLogger;
     size_t memCursor = 0;
 
     Token peek();
@@ -30,7 +29,7 @@ private:
     void parseInlineContent(const std::vector<Token> &tokens, ASTNode *parent);
 
 public:
-    MarkdownParser(const std::vector<Token> &tokens, GlobalLogger &logger);
+    MarkdownParser(const std::vector<Token> &tokens);
 
     ASTNode *parse();
 };

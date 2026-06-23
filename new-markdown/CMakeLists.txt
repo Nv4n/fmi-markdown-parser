@@ -6,6 +6,8 @@ add_library(new-markdown STATIC
         GlobalLogger.cpp
         GlobalLogger.h
         Markdown.h
+        Utility.cpp
+        Utility.h
 )
 
 target_include_directories(new-markdown

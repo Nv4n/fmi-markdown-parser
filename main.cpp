@@ -35,6 +35,8 @@ void debugPrintTree(ASTNode *node, int depth = 0) {
             break;
         case NodeType::STRIKETHROUGH: std::cout << "<Strikethrough>\n";
             break;
+        case NodeType::SUBSCRIPT: std::cout << "<sub>" << "\n";
+            break;
         case NodeType::INLINE_CODE: std::cout << "<code> (" << node->content << ")\n";
             break;
         case NodeType::TEXT: std::cout << "Text: \"" << node->content << "\"\n";
@@ -50,7 +52,7 @@ int main() {
     // Construct sample markdown demonstrating every requested feature
     std::stringstream markdownSource;
     markdownSource << "# Header Level 1\n"
-            << "### **~Header~** *Level* 3\n"
+            << "### ***Header*** *Level* 3\n"
             << "---\n"
             << "This is a normal paragraph showing **bold text**, *italics*, and ~~strikethrough styles~~.\n"
             << "You can also include `inline code units` safely inside paragraphs.\n\n"
@@ -67,12 +69,12 @@ int main() {
 
     GlobalLogger logger;
 
-    Lexer lexer(markdownSource, logger);
-    std::vector<Token> tokens = lexer.tokenize();
+    Lexer lexer(markdownSource);
+    std::vector<Token> tokens = lexer.tokenize2();
 
-    MarkdownParser parser(tokens, logger);
+    MarkdownParser parser(tokens);
     ASTNode *treeRoot = parser.parse();
-    
+
     std::cout << "--- COMPILER TREE RESULT ---\n";
     debugPrintTree(treeRoot);
 

@@ -5,8 +5,8 @@
 #include "Cli.h"
 
 Cli::Cli() {
-    parser = new MarkdownParser();
-    lexer = new Lexer();
+    // parser = new MarkdownParser();
+    // lexer = new Lexer();
 }
 
 Cli::~Cli() {

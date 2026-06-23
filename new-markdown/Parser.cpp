@@ -42,7 +42,7 @@ void MarkdownParser::parseInlineContent(const std::vector<Token> &tokens, ASTNod
                 parent->children.push_back(boldNode);
                 ind = closingInd + 1;
             } else {
-                memLogger.log(tok.line, tok.col, "Mismatched Bold delimiters (**). Treated as plain text.");
+                GlobalLogger::log(tok.line, tok.col, "Mismatched Bold delimiters (**). Treated as plain text.");
                 parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
                 ind++;
             }
@@ -87,7 +87,28 @@ void MarkdownParser::parseInlineContent(const std::vector<Token> &tokens, ASTNod
                 parent->children.push_back(strikeNode);
                 ind = closingInd + 1;
             } else {
-                memLogger.log(tok.line, tok.col, "Mismatched Strikethrough delimiters (~~).");
+                GlobalLogger::log(tok.line, tok.col, "Mismatched Strikethrough delimiters (~~).");
+                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
+                ind++;
+            }
+        } else if (tok.type == TokenType::TILDE) {
+            unsigned closingInd = ind + 1;
+            bool found = false;
+            while (closingInd < tokens.size()) {
+                if (tokens[closingInd].type == TokenType::TILDE) {
+                    found = true;
+                    break;
+                }
+                closingInd++;
+            }
+            if (found) {
+                ASTNode *strikeNode = new ASTNode(NodeType::SUBSCRIPT);
+                std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
+                parseInlineContent(nested, strikeNode);
+                parent->children.push_back(strikeNode);
+                ind = closingInd + 1;
+            } else {
+                GlobalLogger::log(tok.line, tok.col, "Mismatched Subscript delimiters (~).");
                 parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
                 ind++;
             }
@@ -121,8 +142,8 @@ void MarkdownParser::parseInlineContent(const std::vector<Token> &tokens, ASTNod
     }
 }
 
-MarkdownParser::MarkdownParser(const std::vector<Token> &tokens, GlobalLogger &logger)
-    : memTokens(tokens), memLogger(logger) {
+MarkdownParser::MarkdownParser(const std::vector<Token> &tokens)
+    : memTokens(tokens) {
 }
 
 ASTNode *MarkdownParser::parse() {
@@ -150,7 +171,7 @@ ASTNode *MarkdownParser::parse() {
             }
 
             if (!foundEnd) {
-                memLogger.log(start_tok.line, start_tok.col, "Unterminated code block reached EOF.");
+                GlobalLogger::log(start_tok.line, start_tok.col, "Unterminated code block reached EOF.");
             }
 
             codeBlock->content = codeContent;
