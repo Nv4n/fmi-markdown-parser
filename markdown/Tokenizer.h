@@ -24,7 +24,7 @@ enum class TokenType {
     STRIKETHROUGH,
     HORIZONTAL_LINE,
     TEXT_NODE,
-    END_OF_FILE
+    END_OF_FILE,
     UNKNOWN
 };
 

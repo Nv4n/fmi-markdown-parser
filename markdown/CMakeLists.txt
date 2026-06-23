@@ -1,8 +1,4 @@
 add_library(markdown STATIC
-        MarkdownReader.h
-        MarkdownReader.cpp
-        MarkdownTree.h
-        MarkdownTree.cpp
         Tokenizer.h
         Tokenizer.cpp
 )
