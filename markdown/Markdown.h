@@ -20,34 +20,9 @@ struct ASTNode {
     int level; // Used for header levels (1-6)
     std::vector<ASTNode *> children;
 
-    ASTNode(NodeType token, std::string value = "", int level = 0)
-        : type(token), content(value), level(level) {
-    }
+    ASTNode(NodeType token, std::string value = "", int level = 0);
 
-
-    ~ASTNode() {
-        // Move all current children to our local cleanup stack
-        std::vector<ASTNode *> stack = std::move(children);
-
-        while (!stack.empty()) {
-            // Pop a node off the stack
-            ASTNode *current = stack.back();
-            stack.pop_back();
-
-            if (current != nullptr) {
-                // Transfer current's children to our flat stack before deleting it
-                for (ASTNode *child: current->children) {
-                    stack.push_back(child);
-                }
-
-                // Clear the child's vector so its own destructor does not recurse
-                current->children.clear();
-
-                // Safe to delete! It won't trigger a recursive chain.
-                delete current;
-            }
-        }
-    }
+    ~ASTNode();
 };
 
 enum class TokenType {

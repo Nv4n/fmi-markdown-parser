@@ -5,7 +5,7 @@
 #ifndef FMI_MARKDOWN_PARSER_CLI_H
 #define FMI_MARKDOWN_PARSER_CLI_H
 #include "Lexer.h"
-#include "Parser.h"
+#include "MarkdownParser.h"
 
 
 class Cli {

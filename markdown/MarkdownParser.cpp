@@ -2,7 +2,7 @@
 // Created by Sybatron on 6/15/2026.
 //
 
-#include "Parser.h"
+#include "MarkdownParser.h"
 
 Token MarkdownParser::peek() { return memTokens[memCursor]; }
 
@@ -15,7 +15,7 @@ std::vector<Token> MarkdownParser::consumeLine() {
     while (!isEOF() && peek().type != TokenType::NEWLINE) {
         lineTokens.push_back(advance());
     }
-    if (peek().type == TokenType::NEWLINE) advance(); // consume newline character
+    if (peek().type == TokenType::NEWLINE) advance();
     return lineTokens;
 }
 
@@ -24,122 +24,62 @@ void MarkdownParser::parseInlineContent(const std::vector<Token> &tokens, ASTNod
     while (ind < tokens.size()) {
         Token tok = tokens[ind];
 
-        // 1. Bold Syntax
         if (tok.type == TokenType::DOUBLE_STAR) {
-            unsigned closingInd = ind + 1;
-            bool found = false;
-            while (closingInd < tokens.size()) {
-                if (tokens[closingInd].type == TokenType::DOUBLE_STAR) {
-                    found = true;
-                    break;
-                }
-                closingInd++;
-            }
-            if (found) {
-                ASTNode *boldNode = new ASTNode(NodeType::BOLD);
-                std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
-                parseInlineContent(nested, boldNode);
-                parent->children.push_back(boldNode);
-                ind = closingInd + 1;
-            } else {
-                GlobalLogger::log(tok.line, tok.col, "Mismatched Bold delimiters (**). Treated as plain text.");
-                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
-                ind++;
-            }
-        }
-        // 2. Italic Syntax
-        else if (tok.type == TokenType::STAR) {
-            unsigned closingInd = ind + 1;
-            bool found = false;
-            while (closingInd < tokens.size()) {
-                if (tokens[closingInd].type == TokenType::STAR) {
-                    found = true;
-                    break;
-                }
-                closingInd++;
-            }
-            if (found) {
-                ASTNode *italicNode = new ASTNode(NodeType::ITALIC);
-                std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
-                parseInlineContent(nested, italicNode);
-                parent->children.push_back(italicNode);
-                ind = closingInd + 1;
-            } else {
-                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
-                ind++;
-            }
-        }
-        // 3. Strikethrough Syntax
-        else if (tok.type == TokenType::DOUBLE_TILDE) {
-            unsigned closingInd = ind + 1;
-            bool found = false;
-            while (closingInd < tokens.size()) {
-                if (tokens[closingInd].type == TokenType::DOUBLE_TILDE) {
-                    found = true;
-                    break;
-                }
-                closingInd++;
-            }
-            if (found) {
-                ASTNode *strikeNode = new ASTNode(NodeType::STRIKETHROUGH);
-                std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
-                parseInlineContent(nested, strikeNode);
-                parent->children.push_back(strikeNode);
-                ind = closingInd + 1;
-            } else {
-                GlobalLogger::log(tok.line, tok.col, "Mismatched Strikethrough delimiters (~~).");
-                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
-                ind++;
-            }
+            ind = handleInlineElement(tokens, ind, parent, TokenType::DOUBLE_STAR, NodeType::BOLD,
+                                      "Mismatched Bold delimiters (**). Treated as plain text.");
+        } else if (tok.type == TokenType::STAR) {
+            ind = handleInlineElement(tokens, ind, parent, TokenType::STAR, NodeType::ITALIC, "");
+        } else if (tok.type == TokenType::DOUBLE_TILDE) {
+            ind = handleInlineElement(tokens, ind, parent, TokenType::DOUBLE_TILDE, NodeType::STRIKETHROUGH,
+                                      "Mismatched Strikethrough delimiters (~~).");
         } else if (tok.type == TokenType::TILDE) {
-            unsigned closingInd = ind + 1;
-            bool found = false;
-            while (closingInd < tokens.size()) {
-                if (tokens[closingInd].type == TokenType::TILDE) {
-                    found = true;
-                    break;
-                }
-                closingInd++;
-            }
-            if (found) {
-                ASTNode *strikeNode = new ASTNode(NodeType::SUBSCRIPT);
-                std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
-                parseInlineContent(nested, strikeNode);
-                parent->children.push_back(strikeNode);
-                ind = closingInd + 1;
-            } else {
-                GlobalLogger::log(tok.line, tok.col, "Mismatched Subscript delimiters (~).");
-                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
-                ind++;
-            }
-        }
-        // 4. Inline Code Syntax
-        else if (tok.type == TokenType::BACKTICK) {
-            size_t closingInd = ind + 1;
-            bool found = false;
-            while (closingInd < tokens.size()) {
-                if (tokens[closingInd].type == TokenType::BACKTICK) {
-                    found = true;
-                    break;
-                }
-                closingInd++;
-            }
-            if (found) {
-                std::string codeContent;
-                for (size_t k = ind + 1; k < closingInd; ++k) codeContent += tokens[k].value;
-                parent->children.push_back(new ASTNode(NodeType::INLINE_CODE, codeContent));
-                ind = closingInd + 1;
-            } else {
-                parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
-                ind++;
-            }
-        }
-        // 5. Normal text accumulator fallback
-        else {
+            ind = handleInlineElement(tokens, ind, parent, TokenType::TILDE, NodeType::SUBSCRIPT,
+                                      "Mismatched Subscript delimiters (~).");
+        } else if (tok.type == TokenType::BACKTICK) {
+            ind = handleInlineElement(tokens, ind, parent, TokenType::BACKTICK, NodeType::INLINE_CODE, "");
+        } else {
+            // Fallback for regular text tokens
             parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
             ind++;
         }
     }
+}
+
+unsigned MarkdownParser::handleInlineElement(const std::vector<Token> &tokens, unsigned ind, ASTNode *parent,
+                                             TokenType targetType, NodeType nodeType, const std::string &errorMsg) {
+    Token tok = tokens[ind];
+    unsigned closingInd = ind + 1;
+    bool found = false;
+
+    while (closingInd < tokens.size()) {
+        if (tokens[closingInd].type == targetType) {
+            found = true;
+            break;
+        }
+        closingInd++;
+    }
+
+    if (!found) {
+        if (!errorMsg.empty()) {
+            GlobalLogger::log(tok.line, tok.col, errorMsg);
+        }
+        parent->children.push_back(new ASTNode(NodeType::TEXT, tok.value));
+        return ind + 1;
+    }
+
+    if (nodeType == NodeType::INLINE_CODE) {
+        std::string codeContent;
+        for (size_t k = ind + 1; k < closingInd; ++k) {
+            codeContent += tokens[k].value;
+        }
+        parent->children.push_back(new ASTNode(NodeType::INLINE_CODE, codeContent));
+    } else {
+        ASTNode *newNode = new ASTNode(nodeType);
+        std::vector<Token> nested(tokens.begin() + ind + 1, tokens.begin() + closingInd);
+        parseInlineContent(nested, newNode);
+        parent->children.push_back(newNode);
+    }
+    return closingInd + 1;
 }
 
 MarkdownParser::MarkdownParser(const std::vector<Token> &tokens)

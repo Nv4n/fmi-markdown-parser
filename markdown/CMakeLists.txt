@@ -1,6 +1,6 @@
 add_library(markdown STATIC
-        Parser.cpp
-        Parser.h
+        MarkdownParser.cpp
+        MarkdownParser.h
         Lexer.cpp
         Lexer.h
         GlobalLogger.cpp
@@ -8,6 +8,7 @@ add_library(markdown STATIC
         Markdown.h
         Utility.cpp
         Utility.h
+        Markdown.cpp
 )
 
 target_include_directories(markdown

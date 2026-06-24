@@ -5,7 +5,7 @@
 #include "markdown/Markdown.h"
 #include "markdown/GlobalLogger.h"
 #include "markdown/Lexer.h"
-#include "markdown/Parser.h"
+#include "markdown/MarkdownParser.h"
 
 // Helper structure to recursively trace our tree format
 void debugPrintTree(ASTNode *node, int depth = 0) {
@@ -73,10 +73,21 @@ int main() {
     std::vector<Token> tokens = lexer.tokenize2();
 
     MarkdownParser parser(tokens);
-    ASTNode *treeRoot = parser.parse();
+    bool didBreak = false;
+    ASTNode *treeRoot = nullptr;
+    try {
+        treeRoot = parser.parse();
+        std::cout << "--- COMPILER TREE RESULT ---\n";
+        debugPrintTree(treeRoot);
+    } catch (std::exception &e) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "AST tree couldn't be parsed");
+    } catch (...) {
+        didBreak = true;
+        delete treeRoot;
+    }
 
-    std::cout << "--- COMPILER TREE RESULT ---\n";
-    debugPrintTree(treeRoot);
 
     std::cout << "\n--- ERROR LOGGER LOGS ---\n";
     if (GlobalLogger::hasErrors()) {
@@ -86,7 +97,9 @@ int main() {
     }
 
     // Clean up memory
-    delete treeRoot;
+    if (treeRoot) {
+        delete treeRoot;
+    }
 
     return 0;
 }
