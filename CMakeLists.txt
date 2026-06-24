@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(cli)
-add_subdirectory(new-markdown)
+add_subdirectory(markdown)
 add_subdirectory(tests)
 
 add_executable(md_parser main.cpp)

@@ -2,10 +2,10 @@
 
 #include <sstream>
 
-#include "new-markdown/Markdown.h"
-#include "new-markdown/GlobalLogger.h"
-#include "new-markdown/Lexer.h"
-#include "new-markdown/Parser.h"
+#include "markdown/Markdown.h"
+#include "markdown/GlobalLogger.h"
+#include "markdown/Lexer.h"
+#include "markdown/Parser.h"
 
 // Helper structure to recursively trace our tree format
 void debugPrintTree(ASTNode *node, int depth = 0) {
@@ -79,8 +79,8 @@ int main() {
     debugPrintTree(treeRoot);
 
     std::cout << "\n--- ERROR LOGGER LOGS ---\n";
-    if (logger.hasErrors()) {
-        logger.print();
+    if (GlobalLogger::hasErrors()) {
+        GlobalLogger::print();
     } else {
         std::cout << "All clear! No errors registered during evaluation.\n";
     }
