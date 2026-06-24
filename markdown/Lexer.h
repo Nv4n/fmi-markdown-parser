@@ -5,11 +5,9 @@
 #ifndef MARKDOWNPARSER_LEXER_H
 #define MARKDOWNPARSER_LEXER_H
 
-
-#include <istream>
 #include "Markdown.h"
-
 #include "GlobalLogger.h"
+#include <fstream>
 
 class Lexer {
 private:

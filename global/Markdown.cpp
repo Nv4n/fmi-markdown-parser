@@ -4,8 +4,10 @@
 
 #include "Markdown.h"
 
+#include <utility>
+
 ASTNode::ASTNode(NodeType token, std::string value, int level)
-    : type(token), content(value), level(level) {
+    : type(token), content(std::move(value)), level(level) {
 }
 
 ASTNode::~ASTNode() {

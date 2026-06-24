@@ -4,6 +4,8 @@
 
 #include "Cli.h"
 
+#include <iostream>
+
 Cli::Cli() {
     // parser = new MarkdownParser();
     // lexer = new Lexer();

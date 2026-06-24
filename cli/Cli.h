@@ -7,7 +7,6 @@
 #include "Lexer.h"
 #include "MarkdownParser.h"
 
-
 class Cli {
 private:
     MarkdownParser *parser = nullptr;

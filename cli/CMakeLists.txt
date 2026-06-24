@@ -1,10 +1,6 @@
 add_library(cli STATIC
         Cli.cpp
         Cli.h
-        SystemCli.cpp
-        SystemCli.h
-        MarkdownCli.cpp
-        MarkdownCli.h
 )
 
 target_include_directories(cli
@@ -13,3 +9,11 @@ target_include_directories(cli
 )
 
 target_link_libraries(cli PRIVATE markdown)
+target_link_libraries(cli PUBLIC global)
+target_link_libraries(cli PRIVATE html)
+
+
+target_compile_definitions(cli PRIVATE
+        SUBDIR_ASSET_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+)
+

@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "markdown/Markdown.h"
-#include "markdown/GlobalLogger.h"
+#include "Markdown.h"
+#include "GlobalLogger.h"
 #include "markdown/Lexer.h"
 #include "markdown/MarkdownParser.h"
 

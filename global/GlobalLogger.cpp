@@ -4,6 +4,8 @@
 
 #include "GlobalLogger.h"
 
+#include <iostream>
+
 std::vector<std::string> GlobalLogger::mErrors{};
 
 void GlobalLogger::log(unsigned line, unsigned col, const std::string &msg) {

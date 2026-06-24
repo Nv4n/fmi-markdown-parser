@@ -3,12 +3,14 @@ add_library(markdown STATIC
         MarkdownParser.h
         Lexer.cpp
         Lexer.h
-        GlobalLogger.cpp
-        GlobalLogger.h
-        Markdown.h
+        ../global/GlobalLogger.cpp
+        ../global/GlobalLogger.h
+        ../global/Markdown.h
         Utility.cpp
         Utility.h
-        Markdown.cpp
+        ../global/Markdown.cpp
+        ../html/HtmlWriter.cpp
+        ../html/HtmlWriter.h
 )
 
 target_include_directories(markdown
@@ -16,7 +18,4 @@ target_include_directories(markdown
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-
-target_compile_definitions(markdown PRIVATE
-        SUBDIR_ASSET_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
-)
+target_link_libraries(markdown PUBLIC global)

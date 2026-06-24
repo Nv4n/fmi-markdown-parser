@@ -4,7 +4,6 @@
 
 #ifndef MARKDOWNPARSER_GLOBALLOGGER_H
 #define MARKDOWNPARSER_GLOBALLOGGER_H
-#include <iostream>
 #include <string>
 #include <vector>
 
