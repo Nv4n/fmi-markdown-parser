@@ -160,6 +160,7 @@ std::vector<Token> Lexer::tokenize2() {
         if (ch == EOF) break;
 
         switch (ch) {
+            case '\r':
             case '\n': handleNewline(tokens);
                 break;
             case ' ': handleSpace(tokens);
@@ -207,7 +208,15 @@ void Lexer::handleBackslash(std::vector<Token> &tokens) {
 }
 
 void Lexer::handleNewline(std::vector<Token> &tokens) {
-    getChar();
+    if (peekChar() == '\r') {
+        getChar();
+        if (peekChar() == '\n') {
+            getChar();
+        }
+    }
+    if (peekChar() == '\n') {
+        getChar();
+    }
     tokens.push_back({TokenType::NEWLINE, "\n", mLine, mCol});
 }
 

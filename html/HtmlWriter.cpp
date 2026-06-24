@@ -105,7 +105,7 @@ void HtmlWriter::writeOpeningTagAndContent(const ASTNode *node, std::ofstream &o
             break;
         case NodeType::HORIZONTAL_RULE: out << "<hr />\n";
             break;
-        case NodeType::CODE_BLOCK: out << "<pre><code>" << escapeHTML(node->content);
+        case NodeType::CODE_BLOCK: out << "<pre><code>" << escapeHTML(node->content) << "</code></pre>\n";
             break;
         case NodeType::BOLD: out << "<strong>";
             break;
