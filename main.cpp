@@ -4,6 +4,7 @@
 
 #include "Markdown.h"
 #include "GlobalLogger.h"
+#include "html/HtmlWriter.h"
 #include "markdown/Lexer.h"
 #include "markdown/MarkdownParser.h"
 
@@ -48,7 +49,7 @@ void debugPrintTree(ASTNode *node, int depth = 0) {
     }
 }
 
-int main() {
+void demo() {
     // Construct sample markdown demonstrating every requested feature
     std::stringstream markdownSource;
     markdownSource << "# Header Level 1\n"
@@ -96,10 +97,14 @@ int main() {
         std::cout << "All clear! No errors registered during evaluation.\n";
     }
 
+    HTMLGenerator htmlGenerator;
+    htmlGenerator.generate(treeRoot, "index.html");
     // Clean up memory
     if (treeRoot) {
         delete treeRoot;
     }
+}
 
-    return 0;
+int main() {
+    demo();
 }

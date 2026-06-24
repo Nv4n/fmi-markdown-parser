@@ -225,17 +225,17 @@ void Lexer::handleHash(std::vector<Token> &tokens) {
 void Lexer::handleStar(std::vector<Token> &tokens) {
     getChar();
     if (peekChar() == '*') {
-        if (starCount >= 3) {
-            tokens.push_back({TokenType::STAR, "*", mLine, mCol});
-            starCount--;
-            return;
-        }
-        if (peekChar() == '*') {
-            isTripleStar = true;
-        }
+        // if (starCount >= 3) {
+        //     tokens.push_back({TokenType::STAR, "*", mLine, mCol});
+        //     starCount--;
+        //     return;
+        // }
+        // if (peekChar() == '*') {
+        //     isTripleStar = true;
+        // }
 
         getChar();
-        starCount++;
+        // starCount++;
         tokens.push_back({TokenType::DOUBLE_STAR, "**", mLine, mCol});
     } else {
         tokens.push_back({TokenType::STAR, "*", mLine, mCol});

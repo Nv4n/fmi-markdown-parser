@@ -16,23 +16,10 @@ bool HTMLGenerator::generate(const ASTNode *root, const std::string &filename) {
         GlobalLogger::log(0, 0, "Error: Could not open file " + filename + " for writing.");
         return false;
     }
-    //     <!DOCTYPE html>
-    // <html lang="en">
-    // <head>
-    //     <meta charset="UTF-8">
-    //     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    //     <title>Document</title>
-    // </head>
-    // <body>
-    //
-    // </body>
-    // </html>
     saveBoilerplate(outFile);
 
-    // Iterative Stack Traversal
     std::vector<StackAction> stack;
 
-    // Initialize stack with the root node
     stack.push_back({root, false});
 
     while (!stack.empty()) {
@@ -42,14 +29,9 @@ bool HTMLGenerator::generate(const ASTNode *root, const std::string &filename) {
         if (!current.node) continue;
 
         if (current.isClosing) {
-            // Handle closing tags when we backtrack up the tree
             writeClosingTag(current.node, outFile);
         } else {
-            // Handle opening tags and content
             writeOpeningTagAndContent(current.node, outFile);
-
-            // If this node has children, we need to schedule its closing tag,
-            // and then schedule its children to be processed.
             if (!current.node->children.empty() && requiresClosingTag(current.node->type)) {
                 // 1. Push closing action first (so it executes last)
                 stack.push_back({current.node, true});
@@ -82,20 +64,19 @@ void HTMLGenerator::saveBoilerplate(std::ofstream &outFile) {
 
 std::string HTMLGenerator::escapeHTML(const std::string &data) {
     std::string buffer;
-    buffer.reserve(data.size());
-    for (size_t pos = 0; pos != data.size(); ++pos) {
-        switch (data[pos]) {
-            case '&': buffer.append("&amp;");
+    for (const char &pos: data) {
+        switch (pos) {
+            case '&': buffer += "&amp;";
                 break;
-            case '\"': buffer.append("&quot;");
+            case '\"': buffer += "&quot;";
                 break;
-            case '\'': buffer.append("&apos;");
+            case '\'': buffer += "&apos;";
                 break;
-            case '<': buffer.append("&lt;");
+            case '<': buffer += "&lt;";
                 break;
-            case '>': buffer.append("&gt;");
+            case '>': buffer += "&gt;";
                 break;
-            default: buffer.append(&data[pos], 1);
+            default: buffer += pos;
                 break;
         }
     }
