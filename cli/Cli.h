@@ -4,13 +4,18 @@
 
 #ifndef FMI_MARKDOWN_PARSER_CLI_H
 #define FMI_MARKDOWN_PARSER_CLI_H
+#include <iostream>
+
 #include "Lexer.h"
 #include "MarkdownParser.h"
+
+class HTMLGenerator;
 
 class Cli {
 private:
     MarkdownParser *parser = nullptr;
     Lexer *lexer = nullptr;
+    HTMLGenerator *htmlGenerator = nullptr;
     std::string oldInput;
 
 public:
@@ -21,8 +26,6 @@ public:
     Cli &operator=(const Cli &) = delete;
 
     ~Cli();
-
-    void run();
 
 private:
     /**
@@ -59,7 +62,14 @@ private:
      * грешки - извежда списък с редовете и описание на грешката (например незатворен ** блок,
      * неподходящо ниво на #, и т.н.).
      */
-    void validate(std::string input);
+    void validate(const std::string &input);
+
+    // Helper method to check if a string ends with a specific suffix
+    bool endsWith(const std::string &str, const std::string &suffix);
+
+    std::vector<std::string> parseArguments(const std::string &input);
+
+    void executeCommand(const std::vector<std::string> &args);
 };
 
 
