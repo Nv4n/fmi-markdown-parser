@@ -3,14 +3,8 @@ add_library(markdown STATIC
         MarkdownParser.h
         Lexer.cpp
         Lexer.h
-        ../global/GlobalLogger.cpp
-        ../global/GlobalLogger.h
-        ../global/Markdown.h
         Utility.cpp
         Utility.h
-        ../global/Markdown.cpp
-        ../html/HtmlWriter.cpp
-        ../html/HtmlWriter.h
 )
 
 target_include_directories(markdown

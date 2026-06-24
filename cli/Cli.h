@@ -4,18 +4,17 @@
 
 #ifndef FMI_MARKDOWN_PARSER_CLI_H
 #define FMI_MARKDOWN_PARSER_CLI_H
-#include <iostream>
 
+
+#include "HtmlWriter.h"
 #include "Lexer.h"
 #include "MarkdownParser.h"
-
-class HTMLGenerator;
 
 class Cli {
 private:
     MarkdownParser *parser = nullptr;
     Lexer *lexer = nullptr;
-    HTMLGenerator *htmlGenerator = nullptr;
+    HtmlWriter *htmlWriter = nullptr;
     std::string oldInput;
 
 public:
@@ -26,6 +25,8 @@ public:
     Cli &operator=(const Cli &) = delete;
 
     ~Cli();
+
+    void run();
 
 private:
     /**

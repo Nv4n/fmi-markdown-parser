@@ -8,7 +8,7 @@
 #include <fstream>
 
 
-bool HTMLGenerator::generate(const ASTNode *root, const std::string &filename) {
+bool HtmlWriter::save(const ASTNode *root, const std::string &filename) {
     if (!root) return false;
 
     std::ofstream outFile(filename);
@@ -50,7 +50,7 @@ bool HTMLGenerator::generate(const ASTNode *root, const std::string &filename) {
     return true;
 }
 
-void HTMLGenerator::saveBoilerplate(std::ofstream &outFile) {
+void HtmlWriter::saveBoilerplate(std::ofstream &outFile) {
     outFile << "<!DOCTYPE html>\n"
             << "<html lang=\"en\">\n"
             << "<head>\n"
@@ -62,7 +62,7 @@ void HTMLGenerator::saveBoilerplate(std::ofstream &outFile) {
 }
 
 
-std::string HTMLGenerator::escapeHTML(const std::string &data) {
+std::string HtmlWriter::escapeHTML(const std::string &data) {
     std::string buffer;
     for (const char &pos: data) {
         switch (pos) {
@@ -83,11 +83,11 @@ std::string HTMLGenerator::escapeHTML(const std::string &data) {
     return buffer;
 }
 
-bool HTMLGenerator::requiresClosingTag(NodeType type) {
+bool HtmlWriter::requiresClosingTag(NodeType type) {
     return !(type == NodeType::TEXT || type == NodeType::HORIZONTAL_RULE || type == NodeType::INLINE_CODE);
 }
 
-void HTMLGenerator::writeOpeningTagAndContent(const ASTNode *node, std::ofstream &out) {
+void HtmlWriter::writeOpeningTagAndContent(const ASTNode *node, std::ofstream &out) {
     switch (node->type) {
         case NodeType::ROOT: break;
         case NodeType::HEADER: {
@@ -122,7 +122,7 @@ void HTMLGenerator::writeOpeningTagAndContent(const ASTNode *node, std::ofstream
     }
 }
 
-void HTMLGenerator::writeClosingTag(const ASTNode *node, std::ofstream &out) {
+void HtmlWriter::writeClosingTag(const ASTNode *node, std::ofstream &out) {
     switch (node->type) {
         case NodeType::ROOT: break;
         case NodeType::HEADER: {

@@ -7,7 +7,7 @@
 #include "Markdown.h"
 
 
-class HTMLGenerator {
+class HtmlWriter {
 private:
     struct StackAction {
         const ASTNode *node;
@@ -15,16 +15,14 @@ private:
     };
 
 public:
-    HTMLGenerator() = default;
+    HtmlWriter() = default;
 
-
-    bool generate(const ASTNode *root, const std::string &filename);
+    bool save(const ASTNode *root, const std::string &filename);
 
 private:
     std::string escapeHTML(const std::string &data);
 
     void saveBoilerplate(std::ofstream &outFile);
-
 
     bool requiresClosingTag(NodeType type);
 

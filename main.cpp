@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "Cli.h"
 #include "Markdown.h"
 #include "GlobalLogger.h"
 #include "html/HtmlWriter.h"
@@ -68,8 +69,6 @@ void demo() {
             << "```\n"
             << "Ending block text with mismatched **bold flag check.";
 
-    GlobalLogger logger;
-
     Lexer lexer(markdownSource);
     std::vector<Token> tokens = lexer.tokenize2();
 
@@ -97,14 +96,16 @@ void demo() {
         std::cout << "All clear! No errors registered during evaluation.\n";
     }
 
-    HTMLGenerator htmlGenerator;
-    htmlGenerator.generate(treeRoot, "index.html");
+    HtmlWriter htmlGenerator;
+    htmlGenerator.save(treeRoot, "index.html");
     // Clean up memory
-    if (treeRoot) {
+    if (!didBreak && treeRoot != nullptr) {
         delete treeRoot;
     }
 }
 
 int main() {
-    demo();
+    // demo();
+    Cli cli;
+    cli.run();
 }

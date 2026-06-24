@@ -14,11 +14,47 @@ Cli::Cli() {
 Cli::~Cli() {
     delete lexer;
     delete parser;
+    delete htmlWriter;
 }
 
 
 void Cli::translate(std::string input, std::string output) {
     std::cout << "[Translating] From: " << input << " To: " << output << "\n";
+    std::ifstream inputFile(std::string(SUBDIR_ASSET_PATH) + input);
+    if (!inputFile) {
+        throw std::invalid_argument("File does not exist.");
+    }
+    lexer = new Lexer(inputFile);
+    std::vector<Token> tokens = lexer->tokenize2();
+
+    parser = new MarkdownParser(tokens);
+    bool didBreak = false;
+    ASTNode *treeRoot = nullptr;
+    try {
+        treeRoot = parser->parse();
+    } catch (std::exception &e) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "AST tree couldn't be parsed");
+    } catch (...) {
+        didBreak = true;
+        delete treeRoot;
+    }
+
+    htmlWriter = new HtmlWriter();
+    htmlWriter->save(treeRoot, output);
+
+    std::cout << "\n--- ERROR LOGGER LOGS ---\n";
+    if (GlobalLogger::hasErrors()) {
+        GlobalLogger::print();
+    } else {
+        std::cout << "All clear! No errors registered during evaluation.\n";
+    }
+
+    if (!didBreak && treeRoot != nullptr) {
+        delete treeRoot;
+    }
+    GlobalLogger::clear();
 }
 
 void Cli::print(std::string input) {

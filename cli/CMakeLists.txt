@@ -8,9 +8,9 @@ target_include_directories(cli
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(cli PRIVATE markdown)
+target_link_libraries(cli PUBLIC markdown)
 target_link_libraries(cli PUBLIC global)
-target_link_libraries(cli PRIVATE html)
+target_link_libraries(cli PUBLIC html)
 
 
 target_compile_definitions(cli PRIVATE
