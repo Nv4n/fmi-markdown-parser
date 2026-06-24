@@ -11,7 +11,7 @@
 bool HtmlWriter::save(const ASTNode *root, const std::string &filename) {
     if (!root) return false;
 
-    std::ofstream outFile(filename);
+    std::ofstream outFile(std::string(SUBDIR_ASSET_PATH) + filename);
     if (!outFile.is_open()) {
         GlobalLogger::log(0, 0, "Error: Could not open file " + filename + " for writing.");
         return false;

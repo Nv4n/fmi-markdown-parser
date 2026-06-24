@@ -1,5 +1,4 @@
 # Header Level 1
-
 ### ***Header*** *Level* 3
 ---
 This is a normal paragraph showing **bold text**, *italics*, and ~~strikethrough styles~~.
@@ -16,5 +15,4 @@ void main() {
 int value = 42;
 }
 ```
-
 Ending block text with mismatched **bold flag check.

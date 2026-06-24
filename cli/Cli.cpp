@@ -22,7 +22,8 @@ void Cli::translate(std::string input, std::string output) {
     std::cout << "[Translating] From: " << input << " To: " << output << "\n";
     std::ifstream inputFile(std::string(SUBDIR_ASSET_PATH) + input);
     if (!inputFile) {
-        throw std::invalid_argument("File does not exist.");
+        GlobalLogger::log(0, 0, "File does not exist.");
+        return;
     }
     lexer = new Lexer(inputFile);
     std::vector<Token> tokens = lexer->tokenize2();
