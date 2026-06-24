@@ -14,3 +14,8 @@ target_include_directories(new-markdown
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+
+target_compile_definitions(new-markdown PRIVATE
+        SUBDIR_ASSET_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+)
