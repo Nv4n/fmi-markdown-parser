@@ -1,6 +1,8 @@
 add_library(cli STATIC
         Cli.cpp
         Cli.h
+        Utility.cpp
+        Utility.h
 )
 
 target_include_directories(cli

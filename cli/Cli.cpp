@@ -17,6 +17,21 @@ Cli::~Cli() {
     delete htmlWriter;
 }
 
+void Cli::run() {
+    std::string cliInput;
+    while (true) {
+        std::cout << "> ";
+        if (!std::getline(std::cin, cliInput)) {
+            break;
+        }
+        if (cliInput == "exit") {
+            break;
+        }
+
+        std::vector<std::string> args = parseArguments(cliInput);
+        executeCommand(args);
+    }
+}
 
 void Cli::translate(std::string input, std::string output) {
     std::cout << "[Translating] From: " << input << " To: " << output << "\n";
@@ -25,11 +40,21 @@ void Cli::translate(std::string input, std::string output) {
         GlobalLogger::log(0, 0, "File does not exist.");
         return;
     }
-    lexer = new Lexer(inputFile);
-    std::vector<Token> tokens = lexer->tokenize2();
 
-    parser = new MarkdownParser(tokens);
+    try {
+        lexer = new Lexer(inputFile);
+    } catch (std::exception &e) {
+        GlobalLogger::log(0, 0, "AST lexer couldn't be parsed: " + std::string(e.what()));
+    } catch (...) {
+        throw;
+    }
+    std::vector<Token> tokens = lexer->tokenize();
+
+    parser =
+            new
+            MarkdownParser(tokens);
     bool didBreak = false;
+
     ASTNode *treeRoot = nullptr;
     try {
         treeRoot = parser->parse();
@@ -42,17 +67,33 @@ void Cli::translate(std::string input, std::string output) {
         delete treeRoot;
     }
 
-    htmlWriter = new HtmlWriter();
-    htmlWriter->save(treeRoot, output);
+    htmlWriter =
+            new
+            HtmlWriter();
 
-    std::cout << "\n--- ERROR LOGGER LOGS ---\n";
-    if (GlobalLogger::hasErrors()) {
+    htmlWriter
+            ->
+            save(treeRoot, output);
+
+    std::cout
+            <<
+            "\n--- ERROR LOGGER LOGS ---\n";
+    if
+    (GlobalLogger::hasErrors()) {
         GlobalLogger::print();
     } else {
         std::cout << "All clear! No errors registered during evaluation.\n";
     }
 
-    if (!didBreak && treeRoot != nullptr) {
+    if
+    (
+
+
+        !
+        didBreak && treeRoot
+        !=
+        nullptr
+    ) {
         delete treeRoot;
     }
     GlobalLogger::clear();
@@ -139,20 +180,6 @@ void Cli::executeCommand(const std::vector<std::string> &args) {
     }
 }
 
-void Cli::run() {
-    std::string cliInput;
-    while (true) {
-        std::cout << "> ";
-        if (!std::getline(std::cin, cliInput)) {
-            break;
-        }
-        if (cliInput == "exit") {
-            break;
-        }
 
-        std::vector<std::string> args = parseArguments(cliInput);
-        executeCommand(args);
-    }
-}
 
 

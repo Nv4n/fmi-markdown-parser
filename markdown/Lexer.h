@@ -15,8 +15,8 @@ private:
 
     unsigned mLine = 1;
     unsigned mCol = 0;
-    unsigned starCount = 0;
-    bool isTripleStar = false;
+    unsigned mStarCount = 0;
+    bool mIsTripleStar = false;
 
     /**
     * @brief Прочита следващия символ от входния поток и обновява позицията (ред и колона).
@@ -36,9 +36,21 @@ private:
 public:
     Lexer(std::istream &input);
 
+    /**
+    * @brief Извършва лексикален анализ на входния поток и го разделя на токени.
+    *
+    * @return std::vector<Token> Вектор от генерираните токени, завършващ
+    *         винаги с токен от тип `TokenType::END_OF_FILE`.
+    *
+    * @note Методът следи текущата позиция във входа чрез вътрешните член-променливи
+    *       `mLine` (ред) и `mCol` (колона), които се подават на всеки токен за улеснение
+    *       при последващо откриване на грешки.
+    *
+    * @see Token
+    * @see TokenType
+    * @see Utility::isDigit(char)
+    */
     std::vector<Token> tokenize();
-
-    std::vector<Token> tokenize2();
 
 private:
     void handleBackslash(std::vector<Token> &tokens);

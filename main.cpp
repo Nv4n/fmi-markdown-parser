@@ -70,7 +70,7 @@ void demo() {
             << "Ending block text with mismatched **bold flag check.";
 
     Lexer lexer(markdownSource);
-    std::vector<Token> tokens = lexer.tokenize2();
+    std::vector<Token> tokens = lexer.tokenize();
 
     MarkdownParser parser(tokens);
     bool didBreak = false;

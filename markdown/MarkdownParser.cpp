@@ -4,9 +4,13 @@
 
 #include "MarkdownParser.h"
 
-Token MarkdownParser::peek() { return memTokens[memCursor]; }
+Token MarkdownParser::peek() { return mTokens[mCursor]; }
 
-Token MarkdownParser::advance() { return memTokens[memCursor++]; }
+Token MarkdownParser::advance() {
+    if (mCursor < mTokens.size()) {
+        return mTokens[mCursor++];
+    }
+}
 
 bool MarkdownParser::isEOF() { return peek().type == TokenType::END_OF_FILE; }
 
@@ -83,7 +87,7 @@ unsigned MarkdownParser::handleInlineElement(const std::vector<Token> &tokens, u
 }
 
 MarkdownParser::MarkdownParser(const std::vector<Token> &tokens)
-    : memTokens(tokens) {
+    : mTokens(tokens) {
 }
 
 ASTNode *MarkdownParser::parse() {
@@ -94,11 +98,11 @@ ASTNode *MarkdownParser::parse() {
     while (!isEOF()) {
         // Handle Code Blocks (```) first since they span multiple lines
         if (peek().type == TokenType::TRIPLE_BACKTICK) {
-            Token start_tok = advance(); // Consume opening ```
+            Token startTok = advance(); // Consume opening ```
             if (peek().type == TokenType::NEWLINE) advance();
 
             ASTNode *codeBlock = new ASTNode(NodeType::CODE_BLOCK);
-            std::string codeContent = "";
+            std::string codeContent;
             bool foundEnd = false;
 
             while (!isEOF()) {
@@ -111,7 +115,7 @@ ASTNode *MarkdownParser::parse() {
             }
 
             if (!foundEnd) {
-                GlobalLogger::log(start_tok.line, start_tok.col, "Unterminated code block reached EOF.");
+                GlobalLogger::log(startTok.line, startTok.col, "Unterminated code block reached EOF.");
             }
 
             codeBlock->content = codeContent;
@@ -155,8 +159,8 @@ ASTNode *MarkdownParser::parse() {
                 root->children.push_back(currUL);
             }
             ASTNode *item = new ASTNode(NodeType::LIST_ITEM);
-            std::vector<Token> content_tokens(line.begin() + 2, line.end());
-            parseInlineContent(content_tokens, item);
+            std::vector<Token> contentTokens(line.begin() + 2, line.end());
+            parseInlineContent(contentTokens, item);
             currUL->children.push_back(item);
             currOL = nullptr;
             continue;
@@ -170,8 +174,8 @@ ASTNode *MarkdownParser::parse() {
                 root->children.push_back(currOL);
             }
             ASTNode *item = new ASTNode(NodeType::LIST_ITEM, line[0].value); // track number tag
-            std::vector<Token> content_tokens(line.begin() + 3, line.end());
-            parseInlineContent(content_tokens, item);
+            std::vector<Token> contentTokens(line.begin() + 3, line.end());
+            parseInlineContent(contentTokens, item);
             currOL->children.push_back(item);
             currUL = nullptr;
             continue;

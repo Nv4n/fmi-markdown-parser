@@ -9,7 +9,10 @@
 
 
 bool HtmlWriter::save(const ASTNode *root, const std::string &filename) {
-    if (!root) return false;
+    if (!root) {
+        GlobalLogger::log(0, 0, "Empty ASTNode");
+        return false;
+    }
 
     std::ofstream outFile(std::string(SUBDIR_ASSET_PATH) + filename);
     if (!outFile.is_open()) {
@@ -44,7 +47,6 @@ bool HtmlWriter::save(const ASTNode *root, const std::string &filename) {
         }
     }
 
-    // Close boilerplate tags
     outFile << "\n</body>\n</html>\n";
     outFile.close();
     return true;
@@ -91,7 +93,7 @@ void HtmlWriter::writeOpeningTagAndContent(const ASTNode *node, std::ofstream &o
     switch (node->type) {
         case NodeType::ROOT: break;
         case NodeType::HEADER: {
-            int lvl = (node->level < 1 || node->level > 6) ? 1 : node->level;
+            int lvl = (node->level < 1 || node->level > 6) ? 2 : node->level;
             out << "<h" << lvl << ">";
             break;
         }
@@ -126,7 +128,7 @@ void HtmlWriter::writeClosingTag(const ASTNode *node, std::ofstream &out) {
     switch (node->type) {
         case NodeType::ROOT: break;
         case NodeType::HEADER: {
-            int lvl = (node->level < 1 || node->level > 6) ? 1 : node->level;
+            int lvl = (node->level < 1 || node->level > 6) ? 2 : node->level;
             out << "</h" << lvl << ">\n";
             break;
         }

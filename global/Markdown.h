@@ -15,9 +15,9 @@ enum class NodeType {
 };
 
 struct ASTNode {
-    NodeType type;
+    NodeType type = NodeType::PARAGRAPH;
     std::string content;
-    int level; // Used for header levels (1-6)
+    int level = 0; // Used for header levels (1-6)
     std::vector<ASTNode *> children;
 
     ASTNode(NodeType token, std::string value = "", int level = 0);
