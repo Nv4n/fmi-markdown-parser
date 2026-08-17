@@ -25,8 +25,18 @@ void Utility::debugPrintTree(ASTNode *node, int depth) {
             break;
         case NodeType::HORIZONTAL_RULE: std::cout << "[Horizontal Rule (---)]\n";
             break;
-        case NodeType::CODE_BLOCK: std::cout << "[Code Block Content:\n" << node->content << "]\n";
+        case NodeType::CODE_BLOCK: {
+            std::cout << "[Code Block Content:\n";
+            for (const char &c: node->content) {
+                if (c != '\r') {
+                    std::cout << c;
+                }
+            }
+
+            std::cout << "]\n";
             break;
+        }
+
         case NodeType::BOLD: std::cout << "<Bold>\n";
             break;
         case NodeType::ITALIC: std::cout << "<Italic>\n";

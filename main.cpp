@@ -105,6 +105,7 @@ void demo() {
 }
 
 int main() {
+    std::setvbuf(stdout, nullptr, _IONBF, 0);
     // demo();
     Cli cli;
     cli.run();

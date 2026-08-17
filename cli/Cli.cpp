@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "Utility.h"
+
 Cli::Cli() {
     // parser = new MarkdownParser();
     // lexer = new Lexer();
@@ -29,7 +31,20 @@ void Cli::run() {
         }
 
         std::vector<std::string> args = parseArguments(cliInput);
-        executeCommand(args);
+        GlobalLogger::clear();
+        try {
+            executeCommand(args);
+        } catch (...) {
+            std::cout << "\n--- ERROR LOGGER LOGS ---\n";
+            if (GlobalLogger::hasErrors()) {
+                GlobalLogger::print();
+            } else {
+                delete htmlWriter;
+                delete parser;
+                delete lexer;
+                throw;
+            }
+        }
     }
 }
 
@@ -44,15 +59,23 @@ void Cli::translate(std::string input, std::string output) {
     try {
         lexer = new Lexer(inputFile);
     } catch (std::exception &e) {
+        inputFile.close();
         GlobalLogger::log(0, 0, "AST lexer couldn't be parsed: " + std::string(e.what()));
+        return;
     } catch (...) {
+        inputFile.close();
         throw;
     }
     std::vector<Token> tokens = lexer->tokenize();
+    inputFile.close();
 
-    parser =
-            new
-            MarkdownParser(tokens);
+
+    try {
+        parser = new MarkdownParser(tokens);
+    } catch (...) {
+        GlobalLogger::log(0, 0, "Error memory alloc parser");
+        throw;
+    }
     bool didBreak = false;
 
     ASTNode *treeRoot = nullptr;
@@ -62,38 +85,24 @@ void Cli::translate(std::string input, std::string output) {
         didBreak = true;
         delete treeRoot;
         GlobalLogger::log(0, 0, "AST tree couldn't be parsed");
+        return;
     } catch (...) {
         didBreak = true;
         delete treeRoot;
+        throw;
     }
 
-    htmlWriter =
-            new
-            HtmlWriter();
-
-    htmlWriter
-            ->
-            save(treeRoot, output);
-
-    std::cout
-            <<
-            "\n--- ERROR LOGGER LOGS ---\n";
-    if
-    (GlobalLogger::hasErrors()) {
-        GlobalLogger::print();
-    } else {
-        std::cout << "All clear! No errors registered during evaluation.\n";
+    try {
+        htmlWriter = new HtmlWriter();
+    } catch (...) {
+        delete treeRoot;
+        throw;
     }
 
-    if
-    (
+    htmlWriter->save(treeRoot, output);
+    getErrorLog();
 
-
-        !
-        didBreak && treeRoot
-        !=
-        nullptr
-    ) {
+    if (!didBreak && treeRoot != nullptr) {
         delete treeRoot;
     }
     GlobalLogger::clear();
@@ -101,10 +110,105 @@ void Cli::translate(std::string input, std::string output) {
 
 void Cli::print(std::string input) {
     std::cout << "[Printing] File: " << input << "\n";
+    std::ifstream inputFile(std::string(SUBDIR_ASSET_PATH) + input);
+    if (!inputFile) {
+        GlobalLogger::log(0, 0, "File does not exist.");
+        return;
+    }
+
+    try {
+        lexer = new Lexer(inputFile);
+    } catch (std::exception &e) {
+        inputFile.close();
+        GlobalLogger::log(0, 0, "AST lexer couldn't be parsed: " + std::string(e.what()));
+        return;
+    } catch (...) {
+        inputFile.close();
+        throw;
+    }
+    std::vector<Token> tokens = lexer->tokenize();
+
+    inputFile.close();
+
+
+    try {
+        parser = new MarkdownParser(tokens);
+    } catch (...) {
+        GlobalLogger::log(0, 0, "Error memory alloc parser");
+        throw;
+    }
+    bool didBreak = false;
+
+    ASTNode *treeRoot = nullptr;
+    try {
+        treeRoot = parser->parse();
+        Utility::debugPrintTree(treeRoot);
+    } catch (std::exception &e) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "AST tree couldn't be parsed");
+        return;
+    } catch (...) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "Error during AST parse");
+        throw;
+    }
+
+    delete treeRoot;
 }
 
 void Cli::validate(const std::string &input) {
     std::cout << "[Validating] File: " << input << "\n";
+
+    std::ifstream inputFile(std::string(SUBDIR_ASSET_PATH) + input);
+    if (!inputFile) {
+        GlobalLogger::log(0, 0, "File does not exist.");
+        return;
+    }
+
+    try {
+        lexer = new Lexer(inputFile);
+    } catch (std::exception &e) {
+        inputFile.close();
+        GlobalLogger::log(0, 0, "AST lexer couldn't be parsed: " + std::string(e.what()));
+        return;
+    } catch (...) {
+        inputFile.close();
+        throw;
+    }
+    std::vector<Token> tokens = lexer->tokenize();
+
+    inputFile.close();
+
+
+    try {
+        parser = new MarkdownParser(tokens);
+    } catch (...) {
+        GlobalLogger::log(0, 0, "Error memory alloc parser");
+        throw;
+    }
+    bool didBreak = false;
+
+    ASTNode *treeRoot = nullptr;
+    try {
+        treeRoot = parser->parse();
+    } catch (std::exception &e) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "AST tree couldn't be parsed");
+        GlobalLogger::print();
+        return;
+    } catch (...) {
+        didBreak = true;
+        delete treeRoot;
+        GlobalLogger::log(0, 0, "Error during AST parse");
+        GlobalLogger::print();
+        throw;
+    }
+
+    getErrorLog();
+    delete treeRoot;
 }
 
 bool Cli::endsWith(const std::string &str, const std::string &suffix) {
@@ -145,7 +249,11 @@ void Cli::executeCommand(const std::vector<std::string> &args) {
 
     if (command == "translate") {
         if (args.size() < 3) {
-            std::cout << "Error: 'translate' requires an input and an output filepath.\n";
+            std::cerr << "Error: 'translate' requires an input and an output filepath.\n";
+            return;
+        }
+        if (args.size() > 3) {
+            std::cerr << "Error: 'translate' must have 3 arguments only \n";
             return;
         }
 
@@ -164,19 +272,28 @@ void Cli::executeCommand(const std::vector<std::string> &args) {
 
         translate(inputPath, outputPath);
     } else if (command == "print") {
-        if (args.size() >= 2) {
+        if (args.size() == 2) {
             print(args[1]);
         } else {
-            std::cout << "Error: 'print' requires an input filepath.\n";
+            std::cout << "Error: 'print' requires an input filepath and only 2 arguments \n";
         }
     } else if (command == "validate") {
-        if (args.size() >= 2) {
+        if (args.size() == 2) {
             validate(args[1]);
         } else {
-            std::cout << "Error: 'validate' requires an input filepath.\n";
+            std::cout << "Error: 'validate' requires an input filepath and only 2 arguments\n";
         }
     } else {
         std::cout << "Unknown command: " << command << "\n";
+    }
+}
+
+void Cli::getErrorLog() {
+    std::cout << "\n--- ERROR LOGGER LOGS ---\n";
+    if (GlobalLogger::hasErrors()) {
+        GlobalLogger::print();
+    } else {
+        std::cout << "All clear! No errors registered during evaluation.\n";
     }
 }
 

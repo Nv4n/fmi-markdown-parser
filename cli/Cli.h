@@ -112,6 +112,8 @@ private:
     * @see validate(const std::string&)
     */
     void executeCommand(const std::vector<std::string> &args);
+
+    void getErrorLog();
 };
 
 

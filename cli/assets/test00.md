@@ -17,4 +17,4 @@ int value = 42;
 }
 ```
 
-Ending block text with mismatched *!!!*bold flag check.
+Ending block text with mismatched **bold flag check.
